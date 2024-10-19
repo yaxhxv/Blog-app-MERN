@@ -20,7 +20,7 @@ exports.getAllUsers = async (req, res) => {
   
   //create user register user
   exports.registerController = async (req, res) => {
-   try {
+   try {   
     console.log(req.body)
     const  {userName, email, password } = req.body;
     //validation
