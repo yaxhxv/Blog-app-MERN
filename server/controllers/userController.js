@@ -22,7 +22,7 @@ exports.getAllUsers = async (req, res) => {
   exports.registerController = async (req, res) => {
    try {   
     console.log(req.body)
-    const  {userName, email, password } = req.body;
+    const  {userName, email, password, blogs } = req.body;
     //validation
     if(!userName ) {
         return res.status(400).json({ message: 'Please enter userName' });
@@ -42,7 +42,7 @@ exports.getAllUsers = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password,10)
     
     //save new user
-    const newUser =  new  userModel({userName,email,password: hashedPassword})
+    const newUser =  new  userModel({userName,email,password: hashedPassword , blogs})
     await  newUser.save();
     return  res.status(201).json({ message: 'User created successfully',
         sucess:true,

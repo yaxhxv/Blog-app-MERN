@@ -1,4 +1,6 @@
 const blogModel = require('../models/blogModel');
+const userModel = require ('../models/userModel')
+const mongoose = require('mongoose');
 
 
 //Get all blogs
@@ -32,27 +34,42 @@ exports.getAllBlogsControllter = async (req, res) =>{
 // //Create a blog
 exports.createBlogController = async (req, res) =>{
     try {
-        console.log("Request received at create-blog endpoint");
-        console.log("Request Body:", req.body);
-        const {title, description, image} =  req.body;
-        if(!title ||  !description || !image){
+        const {title, description, image, user} =  req.body;
+      
+        if(!title ||  !description || !image || !user){
             return res.status(400).send({
                 success:false,
                 message: "Please fill all fields",
                 error: "Invalid request"
             })
         }
-        const blog = new blogModel({title,description,image})   
-        await  blog.save();
 
-   
+        const existingUser = await userModel.findOne({ _id: user });
+        if(!existingUser){
+            return res.status(404).send
+            ({
+                success:false,
+                message: "User not found",
+                error: "Invalid request in creating blog"
+                })
+                }
+
+
+        const newBlog = new blogModel({title,description,image, user})   
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        await newBlog.save({session});
+        existingUser.blogs.push(newBlog);
+        await existingUser.save({session})
+        await session.commitTransaction();
+        await newBlog.save();
         return res.status(201).send({
             success:true,
-            message: "Blog created successfully",
-            blog: req.body  ,
-
-
+            message:"Blog created successfully",
+            newBlog
         })
+
+       
     } catch (error) {
         console.log(error);
         return  res.status(500).send({
@@ -69,12 +86,7 @@ exports.createBlogController = async (req, res) =>{
         try {
             const {id} = req.params;
             const  {title, description, image} = req.body;
-            if(!id || !title || !description || !image){
-                return res.status(400).send({
-                    success:false,
-                    message: "Please fill all fields",
-                })
-            }
+           
 
             const blog = await blogModel.findOneAndUpdate({_id: id},  {...req.body }, {new: true});
 
@@ -162,4 +174,30 @@ exports.deleteBlogController = async(req,res) =>{
 }
 
 
-// 5 - 14:37 
+exports.userBlogController = async(req,res) =>{
+    try {
+        const userBlog = await userModel.findById(req.params.id).populate('blogs')
+
+        if(!userBlog){
+            return res.status(404).send({
+                success:false,
+                message:"blog not found",
+
+            })
+        }
+        return res.status(200).send({
+            success:true,
+            message:"user Blog", 
+            userBlog
+        })
+        
+    } catch (error) {
+        return res.status(400).send({
+            sucess:false,
+            message:"error in getting user blog",
+            error
+        })
+    }
+}
+
+// 6- 13:00
