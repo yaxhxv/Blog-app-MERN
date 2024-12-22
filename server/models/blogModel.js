@@ -16,7 +16,7 @@ const blogSchema = mongoose.Schema({
         required:[true,   "Image is required"],
     },
     user:{
-        type:mongoose.Types.ObjectId,
+        type: mongoose.Types.ObjectId,
         ref:"User",
         required:[true,  "User is required"],
     }

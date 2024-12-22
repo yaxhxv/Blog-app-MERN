@@ -1,10 +1,21 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { authActions } from "../redux/store";
+import { enqueueSnackbar } from "notistack";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
+    const navigate = useNavigate()
+    const dispatch = useDispatch();
     const isLogin = useSelector((state) => state.isLogin);
-    console.log("the user is logged in: ", isLogin);
+    // console.log("the user is logged in: ", isLogin);
+
+    const handleLogout = () => {
+        dispatch(authActions.logout())
+        enqueueSnackbar("User Logged Out Sucessfully", { variant: 'success' })
+        navigate('/Login')
+    };
 
     return (
         <header className="bg-blue-600 text-white shadow-md">
@@ -39,19 +50,16 @@ const Header = () => {
                             >
                                 Register
                             </Link>
-
                         </div>
-
                     </>
                 )}
-                {isLogin && (<>
-                    <Link
-                        to="/logout"
-                        className="px-4 py-2 rounded hover:bg-blue-500"
-                    >
-                        Logout
-                    </Link>
-                </>)}
+                {isLogin && (
+                    <>
+                        <Link to="/login" className="px-4 py-2 rounded hover:bg-blue-500" onClick={handleLogout}>
+                            Logout
+                        </Link>
+                    </>
+                )}
             </nav>
         </header>
     );

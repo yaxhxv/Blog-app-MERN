@@ -3,13 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { Button, TextField, Typography, Container, Box, Snackbar } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
+import { useDispatch } from "react-redux"
+import { authActions } from '../redux/store'
 
 
 const Login = () => {
+    const dispatch = useDispatch()
     const { enqueueSnackbar, closeSnackbar } = useSnackbar()
     const navigate = useNavigate();
     const [inputs, setInputs] = useState({
-        name: "",
         email: "",
         password: ""
     });
@@ -31,16 +33,18 @@ const Login = () => {
         // Handle form submission logic here
         e.preventDefault();
         try {
-            const { data } = await axios.post('http://localhost:5000/api/v1/users/register', { userName: inputs.name, email: inputs.email, password: inputs.password })
+            const { data } = await axios.post('http://localhost:5000/api/v1/users/login', { email: inputs.email, password: inputs.password })
             if (data) {
-                enqueueSnackbar("User Registered Sucessfully", { variant: 'success' })
-                navigate('/login');
+                localStorage.setItem("userId", data?.user._id)
+                dispatch(authActions.login())
+                enqueueSnackbar("User Logged In Sucessfully", { variant: 'success' })
+                navigate('/');
 
             }
 
         } catch (error) {
             console.log(error)
-            enqueueSnackbar("Registration failed. Please try again", { variant: "error" })
+            enqueueSnackbar("Invalid Credentials", { variant: "error" })
         }
     };
     return (
@@ -60,17 +64,7 @@ const Login = () => {
                     <Typography variant="h4" component="h1" gutterBottom>
                         Login
                     </Typography>
-                    {/* <TextField
-                        variant="outlined"
-                        value={inputs.name}
-                        margin="normal"
-                        fullWidth
-                        label="Name"
-                        placeholder="Enter your name"
-                        name='name'
-                        onChange={handleChange}
-                        required={true}
-                    /> */}
+
                     <TextField
                         value={inputs.email}
                         variant="outlined"
@@ -101,6 +95,8 @@ const Login = () => {
                         fullWidth
                         sx={{ mt: 2 }}
                         onClick={handleSubmit}
+
+
                     >
                         Submit
                     </Button>
